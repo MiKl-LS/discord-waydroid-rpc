@@ -26,7 +26,10 @@ cd waydroid-discord-rpc
 
 To install the script run: 
 
-```sudo ./install.sh```
+```
+chmod +x ./install.sh
+sudo ./install.sh
+```
 
 then edit the config file with your favorite editor
 
@@ -60,6 +63,11 @@ systemctl --user status waydroid-rpc-user.service
 
 When you open a waydroid application, it should set your rpc accordingly.
 
+You can also run `waydroid-rpc.py --current` to get the currently detected application
+
 To uninstall this script, run:
 
-```sudo ./uninstall.sh```
+```
+chmod +x ./uninstall.sh
+sudo ./uninstall.sh
+```

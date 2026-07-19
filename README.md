@@ -21,7 +21,7 @@ Clone this repository first (or just download as a zip, whatever works):
 
 ```
 git clone https://github.com/MiKl-LS/waydroid-discord-rpc
-cd discord-waydroid-rpc
+cd waydroid-discord-rpc
 ```
 
 To install the script run: 

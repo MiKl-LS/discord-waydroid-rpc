@@ -1,0 +1,33 @@
+# Waydroid Discord Rich Presence — configuration
+# Drop this file at /etc/waydroid-rpc/config.yaml
+#
+# Setup steps:
+#   1. Go to https://discord.com/developers/applications
+#   2. New Application → give it a name (e.g. "Waydroid")
+#   3. Copy its Client ID from the General Information page
+#   4. Enable Rich Presence in the sidebar, then upload at least one
+#      art asset (the default key is "waydroid" — name your file that)
+#   5. Paste the Client ID below
+
+# Discord Application Client ID (from Discord Developer Portal → app → OAuth2)
+discord_client_id: ""
+
+# Optional secondary text shown in the Rich Presence
+state_text: "via Waydroid"
+
+# Behavior when no Android app is in the foreground (home screen / launcher):
+#   "clear"     — clear the Rich Presence entirely
+#   "show_idle" — show "Idle" as the game
+idle_behavior: clear
+
+# Default Discord Rich Presence large-image asset key
+default_icon_key: waydroid
+
+# How often (in hours) to refresh the app-name cache from `waydroid app list`
+app_list_cache_ttl_hours: 24
+
+# Paths (defaults shown below — you only need to change these if you want
+# custom locations)
+paths:
+  cache_file: ~/.cache/waydroid-rpc/apps.json
+  foreground_file: /tmp/waydroid-rpc/foreground.json

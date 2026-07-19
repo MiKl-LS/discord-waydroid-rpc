@@ -1,0 +1,15 @@
+[Unit]
+Description=Waydroid RPC - foreground detection (root)
+Documentation=https://github.com/MiKl-LS/discord-waydroid-rpc
+After=network.target waydroid-container.service
+Wants=waydroid-container.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/waydroid-rpc.py --root-daemon
+User=root
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

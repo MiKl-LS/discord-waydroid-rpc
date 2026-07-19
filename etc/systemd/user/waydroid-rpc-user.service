@@ -1,0 +1,13 @@
+[Unit]
+Description=Waydroid RPC - Discord IPC (user)
+Documentation=https://github.com/MiKl-LS/discord-waydroid-rpc
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/waydroid-rpc.py --user-daemon
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

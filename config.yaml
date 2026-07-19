@@ -12,9 +12,6 @@
 # Discord Application Client ID (from Discord Developer Portal → app → OAuth2)
 discord_client_id: ""
 
-# Optional secondary text shown in the Rich Presence
-state_text: "via Waydroid"
-
 # Behavior when no Android app is in the foreground (home screen / launcher):
 #   "clear"     — clear the Rich Presence entirely
 #   "show_idle" — show "Idle" as the game
@@ -29,5 +26,4 @@ app_list_cache_ttl_hours: 24
 # Paths (defaults shown below — you only need to change these if you want
 # custom locations)
 paths:
-  cache_file: ~/.cache/waydroid-rpc/apps.json
   foreground_file: /tmp/waydroid-rpc/foreground.json

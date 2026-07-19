@@ -1,8 +1,8 @@
-# discord-waydroid-rpc
+# waydroid-discord-rpc
 
 ![example rich presence](demo.png)
 
-a dirty (vibe coded) implementation because I thought "wouldn't it be cool if waydroid had rich presence status just like bluestacks?", and turns out there were zero implementations online. (someone should actually make a proper implementation of this)
+a dirty (vibe coded) implementation because I thought "wouldn't it be cool if waydroid had rich presence status just like bluestacks?". and turns out there were zero implementations online. (someone should actually make a proper implementation of this)
 
 I have reviewed the code and after a few rounds of testing it seems stable enough. If you do run this, you should practice proper opsec and read the scripts to ensure it's safe
 
@@ -20,13 +20,16 @@ For this to work you need both python-yaml and pypresence installed globally. To
 Clone this repository first (or just download as a zip, whatever works):
 
 ```
-git clone https://github.com/MiKl-LS/discord-waydroid-rpc
-cd discord-waydroid-rpc
+git clone https://github.com/MiKl-LS/waydroid-discord-rpc
+cd waydroid-discord-rpc
 ```
 
 To install the script run: 
 
-```sudo ./install.sh```
+```
+chmod +x ./install.sh
+sudo ./install.sh
+```
 
 then edit the config file with your favorite editor
 
@@ -62,6 +65,11 @@ systemctl --user status waydroid-rpc-user.service
 
 When you open a waydroid application, it should set your rpc accordingly.
 
+You can also run `waydroid-rpc.py --current` to get the currently detected application
+
 To uninstall this script, run:
 
-```sudo ./uninstall.sh```
+```
+chmod +x ./uninstall.sh
+sudo ./uninstall.sh
+```

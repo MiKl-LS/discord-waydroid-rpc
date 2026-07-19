@@ -1,4 +1,4 @@
-# discord-waydroid-rpc
+# waydroid-discord-rpc
 
 ![example rich presence](demo.png)
 
@@ -20,7 +20,7 @@ For this to work you need both python-yaml and pypresence installed globally. To
 Clone this repository first (or just download as a zip, whatever works):
 
 ```
-git clone https://github.com/MiKl-LS/discord-waydroid-rpc
+git clone https://github.com/MiKl-LS/waydroid-discord-rpc
 cd discord-waydroid-rpc
 ```
 

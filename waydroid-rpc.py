@@ -239,30 +239,36 @@ def fetch_app_list() -> Optional[Dict[str, str]]:
     return parse_app_list_output(r.stdout)
 
 
+def _current_display_name(config: Dict[str, Any]) -> str:
+    """Return the display name of the currently running app."""
+    fg = _foreground_json(Path(config["paths"]["foreground_file"]))
+    state = fg.get("state", "unavailable")
+    if state != "app":
+        return state
+    package = fg.get("package")
+    if not package:
+        return "unavailable"
+
+    cache_path = Path(config["paths"]["cache_file"])
+    data = read_json(cache_path)
+    apps = data.get("apps", {}) if isinstance(data, dict) else {}
+
+    if package in apps:
+        return apps[package]
+
+    fresh = fetch_app_list()
+    if fresh is not None:
+        atomic_write_json(cache_path, {"last_updated": time.time(), "apps": fresh})
+        if package in fresh:
+            return fresh[package]
+
+    return package
+
+
+def _show_current(config: Dict[str, Any]) -> None:
+    print(_current_display_name(config))
+
 # ---------------------------------------------------------------------------
-# Package-name resolution
-# ---------------------------------------------------------------------------
-
-
-def _guess_name(package: str) -> str:
-    """Last-resort friendly name from the package string."""
-    segments = package.split(".")
-    guess = segments[-1]
-    guess = re.sub(r"([a-z])([A-Z])", r"\1 \2", guess)
-    guess = re.sub(r"[_\-]", " ", guess)
-    return guess.title()
-
-
-def resolve_package_name(
-    package: str,
-    app_list: Dict[str, str],
-) -> str:
-    if package in app_list:
-        return app_list[package]
-    logger.warning("Package %s not found in app list; using guessed name", package)
-    return _guess_name(package)
-
-
 # Shared foreground file
 # Written by the root daemon (waydroid detection), read by the user daemon
 # (Discord IPC).  Stored in /tmp/waydroid-rpc/.
@@ -537,10 +543,21 @@ def _current_display_name(config: Dict[str, Any]) -> str:
     package = fg.get("package")
     if not package:
         return "unavailable"
+
     cache_path = Path(config["paths"]["cache_file"])
     data = read_json(cache_path)
     apps = data.get("apps", {}) if isinstance(data, dict) else {}
-    return resolve_package_name(package, apps)
+
+    if package in apps:
+        return apps[package]
+
+    fresh = fetch_app_list()
+    if fresh is not None:
+        atomic_write_json(cache_path, {"last_updated": time.time(), "apps": fresh})
+        if package in fresh:
+            return fresh[package]
+
+    return package
 
 
 def _show_current(config: Dict[str, Any]) -> None:

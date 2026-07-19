@@ -26,6 +26,11 @@ app_list_cache_ttl_hours: 24
 # Seconds between foreground checks (both daemons)
 poll_interval_seconds: 10
 
+# Packages to treat as idle/no-op (launcher, system UI, etc.)
+# Android's default launcher (com.android.launcher3) is always ignored; add more here if needed
+# To find packages, run `waydroid app list` and copy the application's packageName value
+ignored_packages: []
+
 # Paths (defaults shown below — you only need to change these if you want
 # custom locations)
 paths:

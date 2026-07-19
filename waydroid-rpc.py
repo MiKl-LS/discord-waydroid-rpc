@@ -112,6 +112,7 @@ def load_config(path: str) -> Dict[str, Any]:
     config.setdefault("default_icon_key", "waydroid")
     config.setdefault("app_list_cache_ttl_hours", APP_LIST_CACHE_TTL_HOURS)
     config.setdefault("poll_interval_seconds", DEFAULT_POLL_INTERVAL_SECONDS)
+    config.setdefault("ignored_packages", [])
 
     p = config.setdefault("paths", {})
     p.setdefault("cache_file", str(Path.home() / ".cache" / "waydroid-rpc" / "apps.json"))
@@ -120,6 +121,9 @@ def load_config(path: str) -> Dict[str, Any]:
     for k in list(p):
         p[k] = str(Path(p[k]).expanduser())
     config["paths"] = p
+
+    # Merge hardcoded + config ignored packages
+    config["_ignored"] = IGNORED_PACKAGES | set(config["ignored_packages"])
 
     return config
 
@@ -160,7 +164,7 @@ def _session_active() -> bool:
     return "RUNNING" in output
 
 
-def get_foreground_package() -> Optional[str]:
+def get_foreground_package(ignored: set[str] = frozenset()) -> Optional[str]:
     """Return package name, ``STATE_IDLE``, or ``None`` if waydroid is unreachable.
 
     Uses ``dumpsys window`` — the last ``mCurrentFocus`` or
@@ -188,7 +192,7 @@ def get_foreground_package() -> Optional[str]:
             if m:
                 last_pkg = m.group(1)
 
-    return last_pkg if last_pkg is not None and last_pkg not in IGNORED_PACKAGES else STATE_IDLE
+    return last_pkg if last_pkg is not None and last_pkg not in ignored else STATE_IDLE
 
 
 # ---------------------------------------------------------------------------
@@ -376,7 +380,7 @@ def run_root_daemon(config: Dict[str, Any]) -> None:
     logger.info("Root daemon started (poll interval: %ds)", interval)
 
     while not _shutdown_flag:
-        package = get_foreground_package()
+        package = get_foreground_package(config["_ignored"])
 
         if package is None:
             _write_foreground(fg_path, {

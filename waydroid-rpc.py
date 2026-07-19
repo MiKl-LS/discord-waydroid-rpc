@@ -116,6 +116,9 @@ def load_config(path: str) -> Dict[str, Any]:
     p = config.setdefault("paths", {})
     p.setdefault("cache_file", str(Path.home() / ".cache" / "waydroid-rpc" / "apps.json"))
     p.setdefault("foreground_file", str(FOREGROUND_DIR / "foreground.json"))
+    # Resolve ~ in any path value
+    for k in list(p):
+        p[k] = str(Path(p[k]).expanduser())
     config["paths"] = p
 
     return config
@@ -154,7 +157,7 @@ def _session_active() -> bool:
     output = _run_waydroid(["status"])
     if output is None:
         return False
-    return "Session:        RUNNING" in output
+    return "RUNNING" in output
 
 
 def get_foreground_package() -> Optional[str]:
@@ -234,25 +237,6 @@ def fetch_app_list() -> Optional[Dict[str, str]]:
         logger.debug("waydroid app list exited %d: %s", r.returncode, r.stderr.strip())
         return None
     return parse_app_list_output(r.stdout)
-
-
-# ---------------------------------------------------------------------------
-# App-list cache
-# ---------------------------------------------------------------------------
-
-
-def load_app_cache(cache_path: Path, ttl_hours: int) -> Optional[Dict[str, str]]:
-    data = read_json(cache_path)
-    if data is None:
-        return None
-    updated = data.get("last_updated", 0)
-    if time.time() - updated > ttl_hours * 3600:
-        return None
-    return data.get("apps")
-
-
-def save_app_cache(cache_path: Path, apps: Dict[str, str]) -> None:
-    atomic_write_json(cache_path, {"last_updated": time.time(), "apps": apps})
 
 
 # ---------------------------------------------------------------------------
@@ -434,30 +418,10 @@ def run_user_daemon(config: Dict[str, Any]) -> None:
     signal.signal(signal.SIGINT, _signal_handler)
 
     fg_path = Path(config["paths"]["foreground_file"])
-    cache_path = Path(config["paths"]["cache_file"])
     interval = config["poll_interval_seconds"]
-    cache_ttl = config["app_list_cache_ttl_hours"] * 3600
-
-    app_list: Optional[Dict[str, str]] = None
-    last_fetch: float = 0
     rpc: Optional[Presence] = None
     last_state: Optional[str] = None
     last_package: Optional[str] = None
-
-    def _refresh() -> None:
-        nonlocal app_list, last_fetch
-        fresh = fetch_app_list()
-        if fresh is not None:
-            app_list = fresh
-            save_app_cache(cache_path, fresh)
-            last_fetch = time.time()
-            logger.debug("App list refreshed (%d apps)", len(fresh))
-
-    app_list = load_app_cache(cache_path, config["app_list_cache_ttl_hours"])
-    if app_list is not None:
-        last_fetch = time.time()
-    else:
-        _refresh()
 
     logger.info("User daemon started (poll interval: %ds)", interval)
 
@@ -488,12 +452,7 @@ def run_user_daemon(config: Dict[str, Any]) -> None:
                 _presence_update(rpc, "Idle", "", config["default_icon_key"], None)
                 logger.info("Presence set to Idle")
             elif state == "app" and package:
-                if time.time() - last_fetch > cache_ttl:
-                    _refresh()
-                if app_list is not None and package not in app_list:
-                    _refresh()
-
-                name = resolve_package_name(package, app_list or {})
+                name = _current_display_name(config)
                 start = fg.get("session_start")
                 _presence_update(rpc, name, package, config["default_icon_key"], start)
                 logger.info("Presence updated: %s (%s)", name, package)
@@ -543,6 +502,11 @@ def main() -> None:
         action="store_true",
         help="Run the user-level Discord Rich Presence daemon",
     )
+    parser.add_argument(
+        "--current",
+        action="store_true",
+        help="Show the currently running app and exit",
+    )
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -553,13 +517,34 @@ def main() -> None:
 
     config = load_config(args.config)
 
-    if args.root_daemon:
+    if args.current:
+        _show_current(config)
+    elif args.root_daemon:
         run_root_daemon(config)
     elif args.user_daemon:
         run_user_daemon(config)
     else:
         parser.print_help()
         sys.exit(1)
+
+
+def _current_display_name(config: Dict[str, Any]) -> str:
+    """Return the display name of the currently running app."""
+    fg = _foreground_json(Path(config["paths"]["foreground_file"]))
+    state = fg.get("state", "unavailable")
+    if state != "app":
+        return state
+    package = fg.get("package")
+    if not package:
+        return "unavailable"
+    cache_path = Path(config["paths"]["cache_file"])
+    data = read_json(cache_path)
+    apps = data.get("apps", {}) if isinstance(data, dict) else {}
+    return resolve_package_name(package, apps)
+
+
+def _show_current(config: Dict[str, Any]) -> None:
+    print(_current_display_name(config))
 
 
 if __name__ == "__main__":

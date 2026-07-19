@@ -1,6 +1,6 @@
 [Unit]
 Description=Waydroid RPC - foreground detection (root)
-Documentation=https://github.com/MiKl-LS/discord-waydroid-rpc
+Documentation=https://github.com/MiKl-LS/waydroid-discord-rpc
 After=network.target waydroid-container.service
 Wants=waydroid-container.service
 

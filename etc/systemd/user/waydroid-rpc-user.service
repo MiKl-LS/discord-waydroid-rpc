@@ -1,6 +1,6 @@
 [Unit]
 Description=Waydroid RPC - Discord IPC (user)
-Documentation=https://github.com/MiKl-LS/discord-waydroid-rpc
+Documentation=https://github.com/MiKl-LS/waydroid-discord-rpc
 After=graphical-session.target
 
 [Service]
